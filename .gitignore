@@ -1,0 +1,22 @@
+# Virtual Environments
+pinn_env/
+venv/
+env/
+.env/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE / VS Code
+.vscode/
+.idea/
+
+# JAX / XLA compilation cache
+.jax_cache/
+
+# Datasets / Large log files
+*.csv
+*.dat
+*.log
