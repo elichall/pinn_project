@@ -1,0 +1,22 @@
+[project]
+name = "pinn-manipulator"
+version = "0.1.0"
+description = "2 DOF PINN Architecture"
+authors = [
+    {name = "elichall",email = "1elijah.hall@gmail.com"}
+]
+requires-python = "^3.10"
+dependencies = [
+    "jax[cuda12] (>=0.10.0,<0.11.0)",
+    "equinox (>=0.13.7,<0.14.0)",
+    "optax (>=0.2.8,<0.3.0)",
+    "matplotlib (>=3.10.9,<4.0.0)",
+    "pandas (>=3.0.2,<4.0.0)"
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

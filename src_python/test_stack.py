@@ -4,6 +4,7 @@ import equinox as eqx
 import optax
 
 # 1. Hardware Verification
+# This should print your NVIDIA GPU if the cuda12 plugin resolved correctly
 print(f"Hardware: {jax.devices()}")
 
 # 2. Equinox Architecture Definition
@@ -41,4 +42,4 @@ updates, opt_state = optimizer.update(grads, opt_state, model)
 model = eqx.apply_updates(model, updates)
 
 print(f"Initial Loss computed: {loss_value:.4f}")
-print("Stack validation successful. Ready for requirements freeze.")
+print("Stack validation successful. Ready to build the PINN.")

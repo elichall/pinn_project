@@ -1,5 +1,4 @@
 # Virtual Environments
-pinn_env/
 venv/
 env/
 .env/
@@ -20,3 +19,6 @@ __pycache__/
 *.csv
 *.dat
 *.log
+
+# cpp libraries
+ventor/
