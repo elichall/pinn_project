@@ -81,6 +81,10 @@
 					"path" : "/home/elichall/Projects/pinn_project/src_cpp/plant"
 				},
 				{
+					"backtrace" : 3,
+					"path" : "/home/elichall/Projects/pinn_project/src_cpp/trajectory"
+				},
+				{
 					"backtrace" : 4,
 					"path" : "/home/elichall/Projects/pinn_project/vendor/eigen"
 				}

@@ -1,3 +1,4 @@
+#pragma once
 #include <Eigen/Core>
 
 namespace Plant {
@@ -18,6 +19,7 @@ public:
 
   Eigen::Matrix3d M;
   Eigen::Vector3d C;
+  Eigen::Vector3d G;
 
   // public methods
   void update(const Eigen::Vector3d tau,

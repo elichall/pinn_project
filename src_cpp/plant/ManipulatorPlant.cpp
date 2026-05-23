@@ -1,3 +1,4 @@
+#pragma once
 #include "ManipulatorPlant.h"
 #include "config.h"
 #include <Eigen/Core>
@@ -26,11 +27,13 @@ Robot::Robot() {
   cncMat();
 };
 
-void Robot::update(const Eigen::Vector3d tau, double dt) {
+void Robot::update(const Eigen::Vector3d tau, const double dt) {
   // update state vector with previous state values
-  qddot = M.inverse() * (tau - C);
+  qddot = M.inverse() * (tau - C - G);
   qdot = qdot + qddot * dt;
   q = q + qdot * dt;
+
+  G = Eigen::Vector3d{0.0, 0.0, 0.0};
 
   trig();
 

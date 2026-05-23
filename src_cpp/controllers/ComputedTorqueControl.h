@@ -1,17 +1,26 @@
+#pragma once
+#include "ControllerInterface.h"
 #include "ManipulatorPlant.h"
+#include "config.h"
 #include <Eigen/Core>
 
 namespace Controller {
 
-class CTC {
+class CTC : public ControllerInterface {
 public:
   // constructor and destructor
-  CTC(Plant::Robot robot, double samplingTime);
-  ~CTC();
+  CTC(Plant::Robot &robotModel);
+  ~CTC() = default;
 
-  Eigen::Vector3d step();
+  Eigen::VectorXd computeControl(const Controller::RobotState &state,
+                                 const Controller::DesiredState &dState,
+                                 const double dt);
 
 private:
+  double Kp;
+  double Kd;
+
+  Plant::Robot &robotModel;
 };
 
 } // namespace Controller
