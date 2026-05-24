@@ -6,9 +6,9 @@ namespace Plant {
 class Robot {
 public:
   // constuctor
-  Robot();
+  Robot() = default;
   // destructor
-  ~Robot();
+  ~Robot() = default;
 
   // state values
   Eigen::Vector3d q; // th1, d, th2

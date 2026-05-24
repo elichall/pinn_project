@@ -1,6 +1,6 @@
 #pragma once
 #include "ControllerInterface.h"
-#include "ManipulatorPlant.h"
+#include "RobotModel.h"
 #include "config.h"
 #include <Eigen/Core>
 
@@ -9,7 +9,7 @@ namespace Controller {
 class CTC : public ControllerInterface {
 public:
   // constructor and destructor
-  CTC(Plant::Robot &robotModel);
+  CTC(Model::Robot &robotModel);
   ~CTC() = default;
 
   Eigen::VectorXd computeControl(const Controller::RobotState &state,
@@ -20,7 +20,7 @@ private:
   double Kp;
   double Kd;
 
-  Plant::Robot &robotModel;
+  Model::Robot &robotModel;
 };
 
 } // namespace Controller

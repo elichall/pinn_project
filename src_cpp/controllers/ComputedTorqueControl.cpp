@@ -5,7 +5,7 @@
 
 namespace Controller {
 
-CTC::CTC(Plant::Robot &perfectModel) : robotModel(perfectModel) {
+CTC::CTC(Model::Robot &perfectModel) : robotModel(perfectModel) {
   Kp = PROPORTIONAL_GAIN;
   Kd = DERIVATIVE_GAIN;
 };

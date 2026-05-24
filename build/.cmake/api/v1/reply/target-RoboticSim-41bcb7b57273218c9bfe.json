@@ -85,6 +85,18 @@
 					"path" : "/home/elichall/Projects/pinn_project/src_cpp/trajectory"
 				},
 				{
+					"backtrace" : 3,
+					"path" : "/home/elichall/Projects/pinn_project/src_cpp/controllers"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/home/elichall/Projects/pinn_project/src_cpp/models"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/home/elichall/Projects/pinn_project/src_cpp/ipc"
+				},
+				{
 					"backtrace" : 4,
 					"path" : "/home/elichall/Projects/pinn_project/vendor/eigen"
 				}

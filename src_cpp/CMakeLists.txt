@@ -12,7 +12,7 @@ add_executable(RoboticSim ${SOURCES})
 
 # 3. Tell the compiler where your header files (.h) live.
 # "PRIVATE" means these headers are only used by RoboticSim, not shared with other targets.
-target_include_directories(RoboticSim PRIVATE include plant trajectory)
+target_include_directories(RoboticSim PRIVATE include plant trajectory controllers models ipc)
 # Tell RoboticSim it is allowed to read files from the vendored eigen folder
 target_include_directories(RoboticSim PRIVATE ${CMAKE_SOURCE_DIR}/vendor/eigen)
 
