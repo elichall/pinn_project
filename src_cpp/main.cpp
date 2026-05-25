@@ -11,14 +11,15 @@
 const double samplingTime = 0.001;
 const int DOF = 3;
 
-// initalizations
-Plant::Robot plant;
-Model::Robot model;
-Sensors::JointSensors sensors(plant);
-
+// data
 Controller::RobotState<DOF> state;
 Path::DesiredPosition desiredPosition;
 Controller::DesiredState<DOF> desiredState;
+
+// initalizations
+Plant::Robot plant;
+Sensors::JointSensors sensors(plant);
+Model::Robot model(state);
 
 Controller::CTC<DOF> ctc(model);
 
@@ -44,9 +45,12 @@ int main() {
       activeController->computeControl(state, desiredState, samplingTime);
 
   // system response (theoretical step)
-  plant.update(tau, samplingTime);
+  plant.applyControl(tau, samplingTime);
 
   // read response from sensors
   sensors.readSensors();
   state = sensors.qEst;
+
+  // update the model's values
+  model.update();
 }

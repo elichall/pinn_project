@@ -1,18 +1,17 @@
-#pragma once
-#include "ComputedTorqueControl.h"
-#include "Eigen/src/Core/Matrix.h"
-#include <Eigen/Core>
-
 namespace Controller {
 
-CTC::CTC(Model::Robot &perfectModel) : robotModel(perfectModel) {
+template <int DOF>
+CTC<DOF>::CTC(Model::Robot &perfectModel) : robotModel(perfectModel) {
   Kp = PROPORTIONAL_GAIN;
   Kd = DERIVATIVE_GAIN;
 };
 
+template <int DOF>
 Eigen::Matrix<double, DOF, 1>
-CTC::computeControl(const Controller::RobotState &state,
-                    const Controller::DesiredState &dState, const double dt) {
+CTC<DOF>::computeControl(const Controller::RobotState<DOF> &state,
+                         const Controller::DesiredState<DOF> &dState,
+                         const double dt) {
+
   Eigen::Matrix<double, DOF, 1> e = state.q - dState.dq;
   Eigen::Matrix<double, DOF, 1> edot = state.qdot - dState.dqdot;
 

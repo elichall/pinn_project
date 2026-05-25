@@ -15,6 +15,10 @@ __pycache__/
 # JAX / XLA compilation cache
 .jax_cache/
 
+# Agent files
+.agent/
+AGENTS.md
+
 # Datasets / Large log files
 *.csv
 *.dat

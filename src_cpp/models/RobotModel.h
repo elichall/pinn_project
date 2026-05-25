@@ -2,6 +2,7 @@
 #include "ControllerInterface.h"
 #include "TrajectoryGenerator.h"
 #include <Eigen/Core>
+#include <sched.h>
 
 namespace Model {
 
@@ -12,14 +13,9 @@ public:
 class Robot {
 public:
   // constuctor
-  Robot();
+  Robot(Controller::RobotState<3> &stateEst);
   // destructor
   ~Robot() = default;
-
-  // state values
-  Eigen::Vector3d q; // th1, d, th2
-  Eigen::Vector3d qdot;
-  Eigen::Vector3d qddot;
 
   Eigen::Matrix4d T;
 
@@ -28,12 +24,11 @@ public:
   Eigen::Vector3d G;
 
   // public methods
-  void update(const Eigen::Vector3d tau,
-              double dt); // given a torque input respond
+  void update(); // update the models values
 
   void setMode(int mode);
 
-  Controller::DesiredState invKinematics(Path::DesiredPosition);
+  Controller::DesiredState<3> invKinematics(Path::DesiredPosition);
 
 private:
   // flags
@@ -44,6 +39,11 @@ private:
 
   // stored state values
   double c1, c2, c12, s1, s2, s12;
+
+  // state values
+  Controller::RobotState<3> &qEst;
+  Eigen::Vector3d q; // th1, d, th2
+  Eigen::Vector3d qdot;
 
   // private methods
   void spatialMat();

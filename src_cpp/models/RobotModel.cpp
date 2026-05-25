@@ -1,4 +1,3 @@
-#pragma once
 #include "RobotModel.h"
 #include "ControllerInterface.h"
 #include "TrajectoryGenerator.h"
@@ -8,7 +7,7 @@
 
 namespace Model {
 
-Robot::Robot() {
+Robot::Robot(Controller::RobotState<3> &stateEst) : qEst(stateEst) {
   opMode = 1;
 
   m1 = LINK_1_MASS;
@@ -19,8 +18,7 @@ Robot::Robot() {
 
   mE = END_MASS;
 
-  q = INITAL_STATE; // need to use inverse kinematics to get from eps to js
-  qdot = INITAL_STATE_DOT;
+  update();
 
   trig();
 
@@ -29,18 +27,16 @@ Robot::Robot() {
   cncMat();
 };
 
-void Robot::update(const Eigen::Vector3d tau, const double dt) {
+void Robot::update() {
+  q = qEst.q;
+  qdot = qEst.qdot;
+
   // update state vector with previous state values
-  qddot = M.inverse() * (tau - C - G);
-  qdot = qdot + qddot * dt;
-  q = q + qdot * dt;
-
-  G = Eigen::Vector3d{0.0, 0.0, 0.0};
-
   trig();
 
   // update state values to current state vector
   spatialMat();
+
   massMat();
   cncMat();
 };
@@ -120,7 +116,7 @@ void Robot::trig() {
   s12 = std::sin(q[0] + q[2]);
 };
 
-Controller::DesiredState invKinematics(Path::DesiredPosition dpos) {
+Controller::DesiredState<3> invKinematics(Path::DesiredPosition dpos) {
   // inverse kinematics
 };
 

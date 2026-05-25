@@ -7,8 +7,6 @@
 namespace Plant {
 
 Robot::Robot() {
-  opMode = 1;
-
   m1 = LINK_1_MASS;
 
   m2 = LINK_2_MASS;
@@ -27,7 +25,7 @@ Robot::Robot() {
   cncMat();
 };
 
-void Robot::update(const Eigen::Vector3d tau, const double dt) {
+void Robot::applyControl(const Eigen::Vector3d tau, const double dt) {
   // update state vector with previous state values
   qddot = M.inverse() * (tau - C - G);
   qdot = qdot + qddot * dt;
@@ -42,8 +40,6 @@ void Robot::update(const Eigen::Vector3d tau, const double dt) {
   massMat();
   cncMat();
 };
-
-void Robot::setMode(int mode) { opMode = mode; };
 
 void Robot::spatialMat() {
   // Forward Kinematics Transformation

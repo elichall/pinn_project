@@ -4,7 +4,7 @@
 # compile CXX with /usr/sbin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/elichall/Projects/pinn_project/src_cpp/include -I/home/elichall/Projects/pinn_project/src_cpp/plant -I/home/elichall/Projects/pinn_project/src_cpp/trajectory -I/home/elichall/Projects/pinn_project/src_cpp/controllers -I/home/elichall/Projects/pinn_project/src_cpp/models -I/home/elichall/Projects/pinn_project/src_cpp/ipc -I/home/elichall/Projects/pinn_project/vendor/eigen
+CXX_INCLUDES = -I/home/elichall/Projects/pinn_project/src_cpp/include -I/home/elichall/Projects/pinn_project/src_cpp/plant -I/home/elichall/Projects/pinn_project/src_cpp/trajectory -I/home/elichall/Projects/pinn_project/src_cpp/controllers -I/home/elichall/Projects/pinn_project/src_cpp/models -I/home/elichall/Projects/pinn_project/src_cpp/ipc -I/home/elichall/Projects/pinn_project/src_cpp/sensors -I/home/elichall/Projects/pinn_project/vendor/eigen
 
 CXX_FLAGS = -std=c++17
 

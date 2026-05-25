@@ -6,7 +6,7 @@ namespace Plant {
 class Robot {
 public:
   // constuctor
-  Robot() = default;
+  Robot();
   // destructor
   ~Robot() = default;
 
@@ -22,15 +22,10 @@ public:
   Eigen::Vector3d G;
 
   // public methods
-  void update(const Eigen::Vector3d tau,
-              double dt); // given a torque input respond
-
-  void setMode(int mode);
+  void applyControl(const Eigen::Vector3d tau,
+                    double dt); // given a torque input respond
 
 private:
-  // flags
-  int opMode; // 0: all three, 2: static prismatic joint, 3: th2 = 0
-
   // physical constants
   double L, I2, m1, m2, mE;
 
