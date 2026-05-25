@@ -2,27 +2,30 @@
 #include "ControllerInterface.h"
 #include "ManipulatorPlant.h"
 #include "RobotModel.h"
+#include "RobotSensors.h"
 #include "TrajectoryGenerator.h"
 #include "plant/config.h"
 #include <Eigen/Core>
 
 // constants
 const double samplingTime = 0.001;
+const int DOF = 3;
 
 // initalizations
 Plant::Robot plant;
 Model::Robot model;
+Sensors::JointSensors sensors(plant);
 
-Controller::RobotState state;
+Controller::RobotState<DOF> state;
 Path::DesiredPosition desiredPosition;
-Controller::DesiredState desiredState;
+Controller::DesiredState<DOF> desiredState;
 
-Controller::CTC ctc(model);
+Controller::CTC<DOF> ctc(model);
 
 Path::TrajectoryGenerator path = {INITAL_STATE_EPS, FINAL_STATE_EPS, CYCLE_TIME,
                                   5};
 
-Controller::ControllerInterface *activeController = &ctc;
+Controller::ControllerInterface<DOF> *activeController = &ctc;
 
 // time keeping
 double systemTime = 0.0;
@@ -40,19 +43,10 @@ int main() {
   Eigen::VectorXd tau =
       activeController->computeControl(state, desiredState, samplingTime);
 
-// system response
-#pragma omp parallel sections
-  {
-#pragma omp section
-    {
-      plant.update(tau, samplingTime);
-    }
-#pragma omp section
-    {
-      model.update(tau, samplingTime);
-    }
-  }
+  // system response (theoretical step)
+  plant.update(tau, samplingTime);
 
-  state.q = plant.q; // temp perfect model and sensing assumptions
-  state.qdot = plant.qdot;
+  // read response from sensors
+  sensors.readSensors();
+  state = sensors.qEst;
 }
