@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Eigen/Core>
 #include <vector>
 
@@ -8,6 +9,12 @@ struct Waypoint {
   Eigen::Vector3d position;
   Eigen::Vector3d velocity; // Needed for continuous splines
   double time;              // Master clock time when the robot should be here
+};
+
+struct DesiredPosition {
+  Eigen::Vector3d position;
+  Eigen::Vector3d velocity;
+  Eigen::Vector3d acceleration;
 };
 
 class TrajectoryGenerator {
@@ -22,6 +29,7 @@ public:
   Eigen::Vector3d getPosition(double t) const;
   Eigen::Vector3d getVelocity(double t) const;
   Eigen::Vector3d getAcceleration(double t) const;
+  DesiredPosition getDesiredPosition(double t) const;
 
 private:
   std::vector<Waypoint> waypoints;

@@ -2,6 +2,7 @@
 #include "ControllerInterface.h"
 #include "RobotModel.h"
 #include "config.h"
+#include "constants.h"
 #include <Eigen/Core>
 
 namespace Controller {
@@ -12,9 +13,9 @@ public:
   CTC(Model::Robot &robotModel);
   ~CTC() = default;
 
-  Eigen::VectorXd computeControl(const Controller::RobotState &state,
-                                 const Controller::DesiredState &dState,
-                                 const double dt);
+  Eigen::Matrix<double, DOF, 1>
+  computeControl(const Controller::RobotState &state,
+                 const Controller::DesiredState &dState, const double dt);
 
 private:
   double Kp;
@@ -24,3 +25,5 @@ private:
 };
 
 } // namespace Controller
+
+#include "ComputedTorqueControl.tpp"

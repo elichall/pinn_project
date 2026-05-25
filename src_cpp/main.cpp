@@ -7,7 +7,6 @@
 #include <Eigen/Core>
 
 // constants
-const int DOF = 3;
 const double samplingTime = 0.001;
 
 // initalizations
@@ -15,9 +14,10 @@ Plant::Robot plant;
 Model::Robot model;
 
 Controller::RobotState state;
+Path::DesiredPosition desiredPosition;
 Controller::DesiredState desiredState;
 
-Controller::CTC ctc = {model};
+Controller::CTC ctc(model);
 
 Path::TrajectoryGenerator path = {INITAL_STATE_EPS, FINAL_STATE_EPS, CYCLE_TIME,
                                   5};
@@ -33,11 +33,26 @@ int main() {
   cycleTime += samplingTime;
 
   // get this time's desiredState
+  desiredPosition = path.getDesiredPosition(cycleTime);
+  desiredState = model.invKinematics(desiredPosition);
 
-  // compute controll effort
+  // compute control effort
   Eigen::VectorXd tau =
       activeController->computeControl(state, desiredState, samplingTime);
 
-  // system response
-  plant.update(tau, samplingTime);
+// system response
+#pragma omp parallel sections
+  {
+#pragma omp section
+    {
+      plant.update(tau, samplingTime);
+    }
+#pragma omp section
+    {
+      model.update(tau, samplingTime);
+    }
+  }
+
+  state.q = plant.q; // temp perfect model and sensing assumptions
+  state.qdot = plant.qdot;
 }

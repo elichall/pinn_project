@@ -1,6 +1,4 @@
 #include "TrajectoryGenerator.h"
-#include <algorithm>
-#include <cmath>
 #include <random>
 
 namespace Path {
@@ -114,9 +112,33 @@ Eigen::Vector3d TrajectoryGenerator::getVelocity(double t) const {
 // To get Acceleration, you would take the second derivative of the basis
 // functions
 Eigen::Vector3d TrajectoryGenerator::getAcceleration(double t) const {
-  // Leaving this math implementation for you to practice taking the next
-  // derivative!
-  return Eigen::Vector3d::Zero();
+  if (t <= 0 || t >= duration)
+    return Eigen::Vector3d::Zero();
+
+  int idx = getSegmentIndex(t);
+  const Waypoint &p0 = waypoints[idx];
+  const Waypoint &p1 = waypoints[idx + 1];
+
+  double dt = p1.time - p0.time;
+  double s = (t - p0.time) / dt;
+
+  double ddh00 = (12 * s - 6) / dt / dt;
+  double ddh10 = (6 * s - 4) / dt;
+  double ddh01 = (-12 * s + 6) / dt / dt;
+  double ddh11 = (6 * s - 2) / dt;
+
+  return ddh00 * p0.position + ddh10 * p0.velocity + ddh01 * p1.position +
+         ddh11 * p1.velocity;
+}
+
+DesiredPosition TrajectoryGenerator::getDesiredPosition(double t) const {
+  DesiredPosition dpos;
+
+  dpos.position = TrajectoryGenerator::getPosition(t);
+  dpos.velocity = TrajectoryGenerator::getVelocity(t);
+  dpos.acceleration = TrajectoryGenerator::getAcceleration(t);
+
+  return dpos;
 }
 
 } // namespace Path

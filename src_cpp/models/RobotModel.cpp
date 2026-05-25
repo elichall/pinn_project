@@ -1,5 +1,7 @@
 #pragma once
 #include "RobotModel.h"
+#include "ControllerInterface.h"
+#include "TrajectoryGenerator.h"
 #include "config.h"
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -17,7 +19,7 @@ Robot::Robot() {
 
   mE = END_MASS;
 
-  q = INITAL_STATE; // need to use inver kinematics to get from eps to js
+  q = INITAL_STATE; // need to use inverse kinematics to get from eps to js
   qdot = INITAL_STATE_DOT;
 
   trig();
@@ -116,6 +118,10 @@ void Robot::trig() {
   s2 = std::sin(q[2]);
   c12 = std::cos(q[0] + q[2]);
   s12 = std::sin(q[0] + q[2]);
+};
+
+Controller::DesiredState invKinematics(Path::DesiredPosition dpos) {
+  // inverse kinematics
 };
 
 } // namespace Model

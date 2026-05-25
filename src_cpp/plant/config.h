@@ -11,6 +11,9 @@ const double END_MASS = 0.5; // kg
 
 const double CYCLE_TIME = 0.5; // sec
 
+const Eigen::Vector3d INITAL_STATE = {1.0, 1.0, 1.0};
+const Eigen::Vector3d INITAL_STATE_DOT = {0.0, 0.0, 0.0};
+
 const Eigen::Vector3d INITAL_STATE_EPS = {1.0, 0.5, 0.0};        // m
 const Eigen::Vector3d INITAL_STATE_DOT_EPS = {0.0f, 0.0f, 0.0f}; // m/s
 

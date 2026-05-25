@@ -1,4 +1,6 @@
 #pragma once
+#include "ControllerInterface.h"
+#include "TrajectoryGenerator.h"
 #include <Eigen/Core>
 
 namespace Model {
@@ -10,7 +12,7 @@ public:
 class Robot {
 public:
   // constuctor
-  Robot() = default;
+  Robot();
   // destructor
   ~Robot() = default;
 
@@ -30,6 +32,8 @@ public:
               double dt); // given a torque input respond
 
   void setMode(int mode);
+
+  Controller::DesiredState invKinematics(Path::DesiredPosition);
 
 private:
   // flags
