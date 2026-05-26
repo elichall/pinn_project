@@ -164,10 +164,10 @@ Controller::DesiredState<3> Robot::invKinematics(Path::DesiredPosition dpos,
   Eigen::Matrix3d pseudoJ =
       J_des.transpose() * (J_des * J_des.transpose()).inverse();
 
-  desState.dqdot = pseudoJ * dpos.velocity +
+  desState.dqdot = pseudoJ * dpos.velocity.head<2>() +
                    (Eigen::Matrix3d::Identity() - pseudoJ * J_des) * dqOld.dqdot;
 
-  desState.dqddot = pseudoJ * (dpos.acceleration - Jdot_des * dqOld.dqdot) +
+  desState.dqddot = pseudoJ * (dpos.acceleration.head<2>() - Jdot_des * dqOld.dqdot) +
                     (Eigen::Matrix3d::Identity() - pseudoJ * J_des) * dqOld.dqddot;
 
   Eigen::Vector2d linearizarionError = {

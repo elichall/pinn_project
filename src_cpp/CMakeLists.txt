@@ -2,8 +2,10 @@
 # Whenever you add a new controller, you just add its filename to this list.
 set(SOURCES
     main.cpp
-    # core/ManipulatorPlant.cpp
-    # core/SharedMemoryLink.cpp
+    plant/ManipulatorPlant.cpp
+    trajectory/TrajectoryGenerator.cpp
+    models/RobotModel.cpp
+    ipc/SharedMemoryLink.cpp
 )
 
 # 2. Create the actual executable program and name it "RoboticSim".
@@ -12,7 +14,7 @@ add_executable(RoboticSim ${SOURCES})
 
 # 3. Tell the compiler where your header files (.h) live.
 # "PRIVATE" means these headers are only used by RoboticSim, not shared with other targets.
-target_include_directories(RoboticSim PRIVATE include plant trajectory controllers models ipc sensors)
+target_include_directories(RoboticSim PRIVATE include plant trajectory controllers models ipc sensors graphics)
 # Tell RoboticSim it is allowed to read files from the vendored eigen folder
 target_include_directories(RoboticSim PRIVATE ${CMAKE_SOURCE_DIR}/vendor/eigen)
 
@@ -23,3 +25,8 @@ target_link_libraries(RoboticSim
     pthread        # POSIX Threading: Required by Boost under the hood
     rt             # POSIX Real-Time: Absolutely required for Linux shared memory (shm_open)
 )
+
+# 5. Create the separate graphics application executable
+add_executable(GraphicsApp graphics/GraphicsApp.cpp ipc/SharedMemoryLink.cpp)
+target_include_directories(GraphicsApp PRIVATE include ipc graphics)
+target_link_libraries(GraphicsApp PRIVATE pthread rt)
