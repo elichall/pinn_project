@@ -27,6 +27,17 @@ target_link_libraries(RoboticSim
 )
 
 # 5. Create the separate graphics application executable
-add_executable(GraphicsApp graphics/GraphicsApp.cpp ipc/SharedMemoryLink.cpp)
-target_include_directories(GraphicsApp PRIVATE include ipc graphics)
-target_link_libraries(GraphicsApp PRIVATE pthread rt)
+add_executable(GraphicsApp 
+    graphics/GraphicsApp.cpp 
+    graphics/GraphicsEngine.cpp 
+    ipc/SharedMemoryLink.cpp
+    ${CMAKE_SOURCE_DIR}/vendor/glad/src/glad.c
+)
+target_include_directories(GraphicsApp PRIVATE 
+    include 
+    ipc 
+    graphics
+    ${CMAKE_SOURCE_DIR}/vendor/glad/include
+    ${CMAKE_SOURCE_DIR}/vendor/glm
+)
+target_link_libraries(GraphicsApp PRIVATE pthread rt glfw GL dl)

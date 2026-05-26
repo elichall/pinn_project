@@ -18,6 +18,7 @@ __pycache__/
 # Agent files
 .cache/
 .agent/
+reference_code/
 AGENTS.md
 TODO.md
 

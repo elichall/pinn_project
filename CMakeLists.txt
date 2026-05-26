@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 
 # 2. Define the project name, its version, and the languages used.
 # "CXX" tells CMake this is strictly a C++ project (no C or Fortran).
-project(RoboticPINNSim VERSION 1.0 LANGUAGES CXX)
+project(RoboticPINNSim VERSION 1.0 LANGUAGES C CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # 3. Force the compiler to use the C++17 standard.
