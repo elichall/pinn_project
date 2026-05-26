@@ -1,8 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/home/elichall/Projects/pinn_project/build/cmake_install.cmake",
-		"/home/elichall/Projects/pinn_project/build/src_cpp/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
