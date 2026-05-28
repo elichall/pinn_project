@@ -6,6 +6,7 @@ set(SOURCES
     trajectory/TrajectoryGenerator.cpp
     models/RobotModel.cpp
     ipc/SharedMemoryLink.cpp
+    sensors/RobotSensors.cpp
 )
 
 # 2. Create the actual executable program and name it "RoboticSim".

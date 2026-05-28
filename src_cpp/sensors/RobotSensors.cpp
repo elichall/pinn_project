@@ -1,4 +1,3 @@
-#include "ManipulatorPlant.h"
 #include "RobotSensors.h"
 
 namespace Sensors {

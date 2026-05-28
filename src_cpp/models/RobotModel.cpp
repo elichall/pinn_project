@@ -112,8 +112,10 @@ void Robot::cncMat() {
   C[2] = 0.5 * mc * L * d * s2 * qd0 * qd0 + mc * L * c2 * qd0 * qd1;
 };
 
-void Robot::calcJacobian(const Eigen::Vector3d& q_in, const Eigen::Vector3d& qdot_in, 
-                         Eigen::Matrix<double, 2, 3>& J_out, Eigen::Matrix<double, 2, 3>& Jdot_out) {
+void Robot::calcJacobian(const Eigen::Vector3d &q_in,
+                         const Eigen::Vector3d &qdot_in,
+                         Eigen::Matrix<double, 2, 3> &J_out,
+                         Eigen::Matrix<double, 2, 3> &Jdot_out) {
   double d = q_in[1];
   double c1_val = std::cos(q_in[0]);
   double s1_val = std::sin(q_in[0]);
@@ -131,17 +133,17 @@ void Robot::calcJacobian(const Eigen::Vector3d& q_in, const Eigen::Vector3d& qdo
   double ddot = qdot_in[1];
   double q2dot = qdot_in[2];
 
-  Jdot_out(0, 0) = -c1_val * d * q1dot - s1_val * ddot - L * c12_val * (q1dot + q2dot);
+  Jdot_out(0, 0) =
+      -c1_val * d * q1dot - s1_val * ddot - L * c12_val * (q1dot + q2dot);
   Jdot_out(0, 1) = -s1_val * q1dot;
   Jdot_out(0, 2) = -L * c12_val * (q1dot + q2dot);
-  Jdot_out(1, 0) = -s1_val * d * q1dot + c1_val * ddot - L * s12_val * (q1dot + q2dot);
+  Jdot_out(1, 0) =
+      -s1_val * d * q1dot + c1_val * ddot - L * s12_val * (q1dot + q2dot);
   Jdot_out(1, 1) = c1_val * q1dot;
   Jdot_out(1, 2) = -L * s12_val * (q1dot + q2dot);
 }
 
-void Robot::jacobianMat() {
-  calcJacobian(q, qdot, J, Jdot);
-};
+void Robot::jacobianMat() { calcJacobian(q, qdot, J, Jdot); };
 
 void Robot::trig() {
   c1 = std::cos(q[0]);
@@ -161,14 +163,16 @@ Controller::DesiredState<3> Robot::invKinematics(Path::DesiredPosition dpos,
   calcJacobian(dqOld.dq, dqOld.dqdot, J_des, Jdot_des);
 
   // potentially implement damped pesudo inverse
-  Eigen::Matrix3d pseudoJ =
+  Eigen::Matrix<double, 3, 2> pseudoJ =
       J_des.transpose() * (J_des * J_des.transpose()).inverse();
 
-  desState.dqdot = pseudoJ * dpos.velocity.head<2>() +
-                   (Eigen::Matrix3d::Identity() - pseudoJ * J_des) * dqOld.dqdot;
+  desState.dqdot =
+      pseudoJ * dpos.velocity.head<2>() +
+      (Eigen::Matrix3d::Identity() - pseudoJ * J_des) * dqOld.dqdot;
 
-  desState.dqddot = pseudoJ * (dpos.acceleration.head<2>() - Jdot_des * dqOld.dqdot) +
-                    (Eigen::Matrix3d::Identity() - pseudoJ * J_des) * dqOld.dqddot;
+  desState.dqddot =
+      pseudoJ * (dpos.acceleration.head<2>() - Jdot_des * dqOld.dqdot) +
+      (Eigen::Matrix3d::Identity() - pseudoJ * J_des) * dqOld.dqddot;
 
   Eigen::Vector2d linearizarionError = {
       0, 0}; // check forward kinematics and correct for error drift over time

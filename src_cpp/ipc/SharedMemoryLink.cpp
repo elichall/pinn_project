@@ -1,22 +1,37 @@
 #include "SharedMemoryLink.h"
 #include <fcntl.h>    // For O_CREAT, O_RDWR
 #include <sys/mman.h> // For shm_open, mmap, PROT_READ, PROT_WRITE
+#include <sys/stat.h> // For fchmod
 #include <unistd.h>   // For ftruncate
 #include <iostream>
+#include <cstdlib>
 
 namespace IPC {
 
 TelemetryIPC* initTelemetryIPC() {
   // Create objects which will be the SharedMemoryLink
   int fd_telemetry = shm_open("/pinn_manip_telemetry", O_CREAT | O_RDWR, 0666);
+  if (fd_telemetry == -1) {
+    std::cerr << "Failed to open shared memory for telemetry" << std::endl;
+    exit(1);
+  }
+  // Force 0666 permissions bypassing root's umask so normal users can read/write
+  fchmod(fd_telemetry, 0666);
 
   // allocate the space in ram
-  ftruncate(fd_telemetry, sizeof(TelemetryIPC));
+  if (ftruncate(fd_telemetry, sizeof(TelemetryIPC)) == -1) {
+    std::cerr << "Failed to allocate shared memory for telemetry" << std::endl;
+    exit(1);
+  }
 
   // maps the memory to cpp pointers
   TelemetryIPC *telemetryIPC =
       (TelemetryIPC *)mmap(NULL, sizeof(TelemetryIPC), PROT_READ | PROT_WRITE,
                            MAP_SHARED, fd_telemetry, 0);
+  if (telemetryIPC == MAP_FAILED) {
+    std::cerr << "Failed to map shared memory for telemetry" << std::endl;
+    exit(1);
+  }
 
   // initalize the counters to zero
   telemetryIPC->sequenceCounter.store(0);
@@ -27,12 +42,25 @@ TelemetryIPC* initTelemetryIPC() {
 
 PathIPC* initPathIPC() {
   int fd_path = shm_open("/pinn_manip_path", O_CREAT | O_RDWR, 0666);
+  if (fd_path == -1) {
+    std::cerr << "Failed to open shared memory for path" << std::endl;
+    exit(1);
+  }
+  // Force 0666 permissions bypassing root's umask so normal users can lock the mutex
+  fchmod(fd_path, 0666);
 
   // allocate the space in ram
-  ftruncate(fd_path, sizeof(PathIPC));
+  if (ftruncate(fd_path, sizeof(PathIPC)) == -1) {
+    std::cerr << "Failed to allocate shared memory for path" << std::endl;
+    exit(1);
+  }
 
   PathIPC *pathIPC = (PathIPC *)mmap(
       NULL, sizeof(PathIPC), PROT_READ | PROT_WRITE, MAP_SHARED, fd_path, 0);
+  if (pathIPC == MAP_FAILED) {
+    std::cerr << "Failed to map shared memory for path" << std::endl;
+    exit(1);
+  }
 
   // Set access privilages
   // Configure Mutex Attributes
