@@ -1,21 +1,25 @@
 #include "SharedMemoryLink.h"
-#include <fcntl.h>    // For O_CREAT, O_RDWR
+
+#include <cstdlib>
+#include <fcntl.h> // For O_CREAT, O_RDWR
+#include <iostream>
 #include <sys/mman.h> // For shm_open, mmap, PROT_READ, PROT_WRITE
 #include <sys/stat.h> // For fchmod
 #include <unistd.h>   // For ftruncate
-#include <iostream>
-#include <cstdlib>
 
 namespace IPC {
 
-TelemetryIPC* initTelemetryIPC() {
+TelemetryIPC *initTelemetryIPC() {
   // Create objects which will be the SharedMemoryLink
+  shm_unlink("/pinn_manip_telemetry"); // Clear existing memory to prevent
+                                       // permission conflicts
   int fd_telemetry = shm_open("/pinn_manip_telemetry", O_CREAT | O_RDWR, 0666);
   if (fd_telemetry == -1) {
     std::cerr << "Failed to open shared memory for telemetry" << std::endl;
     exit(1);
   }
-  // Force 0666 permissions bypassing root's umask so normal users can read/write
+  // Force 0666 permissions bypassing root's umask so normal users can
+  // read/write
   fchmod(fd_telemetry, 0666);
 
   // allocate the space in ram
@@ -40,13 +44,16 @@ TelemetryIPC* initTelemetryIPC() {
   return telemetryIPC;
 }
 
-PathIPC* initPathIPC() {
+PathIPC *initPathIPC() {
+  shm_unlink("/pinn_manip_path"); // Clear existing memory to prevent permission
+                                  // conflicts
   int fd_path = shm_open("/pinn_manip_path", O_CREAT | O_RDWR, 0666);
   if (fd_path == -1) {
     std::cerr << "Failed to open shared memory for path" << std::endl;
     exit(1);
   }
-  // Force 0666 permissions bypassing root's umask so normal users can lock the mutex
+  // Force 0666 permissions bypassing root's umask so normal users can lock the
+  // mutex
   fchmod(fd_path, 0666);
 
   // allocate the space in ram
@@ -78,7 +85,8 @@ PathIPC* initPathIPC() {
   return pathIPC;
 }
 
-void writeTelemetry(TelemetryIPC* ipc, const double* q, const double* qdot, const double* tau) {
+void writeTelemetry(TelemetryIPC *ipc, const double *q, const double *qdot,
+                    const double *tau) {
   // on odd python and graphics won't grab data
   // if squenceCounter is different after fetching, they discard
   ipc->sequenceCounter.fetch_add(1, std::memory_order_release);
@@ -90,15 +98,21 @@ void writeTelemetry(TelemetryIPC* ipc, const double* q, const double* qdot, cons
   ipc->sequenceCounter.fetch_add(1, std::memory_order_release);
 }
 
-void writePath(PathIPC* pathIPC, TelemetryIPC* telemetryIPC) {
+void writePath(const double *pathX, const double *pathY, const double *pathZ,
+               int numPoints, PathIPC *pathIPC, TelemetryIPC *telemetryIPC) {
   // unlock mutex
   pthread_mutex_lock(&pathIPC->mutex);
 
-  /*
-  write waypoints to ipc
-  */
+  pathIPC->num_points = numPoints;
 
-  // lock again and increment path flag to let graphics know there is a change
+  for (int i = 0; i < numPoints && i < MAX_PATH_POINTS; i++) {
+    pathIPC->pathX[i] = pathX[i];
+    pathIPC->pathY[i] = pathY[i];
+    pathIPC->pathZ[i] = pathZ[i];
+  }
+
+  // lock again and increment path flag to let graphics know there is a
+  // change
   pthread_mutex_unlock(&pathIPC->mutex);
   telemetryIPC->pathVersion.fetch_add(1, std::memory_order_relaxed);
 }

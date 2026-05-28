@@ -7,6 +7,15 @@ TrajectoryGenerator::TrajectoryGenerator(const Eigen::Vector3d &start,
                                          const Eigen::Vector3d &end,
                                          double totalTime, int numRandomPoints)
     : duration(totalTime) {
+  generatePath(start, end, totalTime, numRandomPoints);
+}
+
+void TrajectoryGenerator::generatePath(const Eigen::Vector3d &start,
+                                       const Eigen::Vector3d &end,
+                                       double totalTime, int numRandomPoints) {
+  waypoints.clear();
+  duration = totalTime;
+
   // 1. Setup random number generation for planar noise (X and Y only)
   std::random_device rd;
   std::mt19937 gen(rd());

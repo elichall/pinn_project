@@ -25,6 +25,9 @@ public:
 
   ~TrajectoryGenerator() = default;
 
+  void generatePath(const Eigen::Vector3d &start, const Eigen::Vector3d &end,
+                    double totalTime, int numRandomPoints);
+
   // Callable at any time t. Returns Cartesian [X, Y, Z]
   Eigen::Vector3d getPosition(double t) const;
   Eigen::Vector3d getVelocity(double t) const;

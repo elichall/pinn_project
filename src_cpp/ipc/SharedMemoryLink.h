@@ -1,3 +1,4 @@
+
 #include <atomic>
 #include <cstdint>
 #include <pthread.h>
@@ -44,11 +45,13 @@ struct PathIPC {
 };
 
 // --- Initialization Methods ---
-TelemetryIPC* initTelemetryIPC();
-PathIPC* initPathIPC();
+TelemetryIPC *initTelemetryIPC();
+PathIPC *initPathIPC();
 
 // --- Memory Write Methods ---
-void writeTelemetry(TelemetryIPC* ipc, const double* q, const double* qdot, const double* tau);
-void writePath(PathIPC* pathIPC, TelemetryIPC* telemetryIPC);
+void writeTelemetry(TelemetryIPC *ipc, const double *q, const double *qdot,
+                    const double *tau);
+void writePath(const double *pathX, const double *pathY, const double *pathZ,
+               int numPoints, PathIPC *pathIPC, TelemetryIPC *telemetryIPC);
 
 } // namespace IPC

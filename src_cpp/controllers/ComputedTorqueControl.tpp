@@ -20,7 +20,7 @@ CTC<DOF>::computeControl(const Controller::RobotState<DOF> &state,
   Eigen::Matrix<double, DOF, 1> G = robotModel.G;
 
   Eigen::Matrix<double, DOF, 1> tau =
-      M * (dState.dqddot + Kd * edot + Kp * e) + C + G;
+      M * (dState.dqddot - Kd * edot - Kp * e) + C + G;
 
   return tau;
 };
