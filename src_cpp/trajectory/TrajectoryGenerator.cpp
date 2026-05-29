@@ -13,15 +13,20 @@ TrajectoryGenerator::TrajectoryGenerator(const Eigen::Vector3d &start,
 void TrajectoryGenerator::generatePath(const Eigen::Vector3d &start,
                                        const Eigen::Vector3d &end,
                                        double totalTime, int numRandomPoints) {
-  waypoints.clear();
+  numWaypoints = 0;
   duration = totalTime;
 
+  // Prevent array overflow
+  if (numRandomPoints + 2 > MAX_WAYPOINTS) {
+    numRandomPoints = MAX_WAYPOINTS - 2;
+  }
+
   // 1. Setup random number generation for planar noise (X and Y only)
-  std::random_device rd;
-  std::mt19937 gen(rd());
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
   std::uniform_real_distribution<> noise(-0.1, 0.1); // +/- 10cm noise
 
-  waypoints.push_back({start, Eigen::Vector3d::Zero(), 0.0});
+  waypoints[numWaypoints++] = {start, Eigen::Vector3d::Zero(), 0.0};
 
   // 2. Generate random intermediate points
   // To keep the path progressing forward, we linearly interpolate from start
@@ -40,14 +45,14 @@ void TrajectoryGenerator::generatePath(const Eigen::Vector3d &start,
     // velocity
     double timeAtWaypoint = fraction * totalTime;
 
-    waypoints.push_back({basePos, Eigen::Vector3d::Zero(), timeAtWaypoint});
+    waypoints[numWaypoints++] = {basePos, Eigen::Vector3d::Zero(), timeAtWaypoint};
   }
 
-  waypoints.push_back({end, Eigen::Vector3d::Zero(), totalTime});
+  waypoints[numWaypoints++] = {end, Eigen::Vector3d::Zero(), totalTime};
 
   // 3. Compute Velocities at Waypoints using Catmull-Rom logic
   // v_i = (p_{i+1} - p_{i-1}) / (t_{i+1} - t_{i-1})
-  for (size_t i = 1; i < waypoints.size() - 1; ++i) {
+  for (int i = 1; i < numWaypoints - 1; ++i) {
     double dt = waypoints[i + 1].time - waypoints[i - 1].time;
     waypoints[i].velocity =
         (waypoints[i + 1].position - waypoints[i - 1].position) / dt;
@@ -60,22 +65,22 @@ int TrajectoryGenerator::getSegmentIndex(double t) const {
   if (t <= 0)
     return 0;
   if (t >= duration)
-    return waypoints.size() - 2;
+    return numWaypoints - 2;
 
   // Find the correct time segment
-  for (size_t i = 0; i < waypoints.size() - 1; ++i) {
+  for (int i = 0; i < numWaypoints - 1; ++i) {
     if (t >= waypoints[i].time && t <= waypoints[i + 1].time) {
       return i;
     }
   }
-  return waypoints.size() - 2;
+  return numWaypoints - 2;
 }
 
 Eigen::Vector3d TrajectoryGenerator::getPosition(double t) const {
   if (t <= 0)
-    return waypoints.front().position;
+    return waypoints[0].position;
   if (t >= duration)
-    return waypoints.back().position;
+    return waypoints[numWaypoints - 1].position;
 
   int idx = getSegmentIndex(t);
   const Waypoint &p0 = waypoints[idx];

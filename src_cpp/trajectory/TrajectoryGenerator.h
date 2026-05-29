@@ -1,9 +1,11 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <vector>
+#include <array>
 
 namespace Path {
+
+constexpr int MAX_WAYPOINTS = 20;
 
 struct Waypoint {
   Eigen::Vector3d position;
@@ -35,7 +37,8 @@ public:
   DesiredPosition getDesiredPosition(double t) const;
 
 private:
-  std::vector<Waypoint> waypoints;
+  std::array<Waypoint, MAX_WAYPOINTS> waypoints;
+  int numWaypoints = 0;
   double duration;
 
   // Helper function to find which segment of the spline we are currently in

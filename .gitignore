@@ -26,6 +26,7 @@ TODO.md
 *.csv
 *.dat
 *.log
+logs/
 
 # cpp libraries
 vendor/
@@ -35,3 +36,6 @@ build/
 
 # graphics engine
 src_cpp/graphics/GraphicsEngine.*
+
+# literature files
+literature.md

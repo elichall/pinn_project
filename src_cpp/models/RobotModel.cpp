@@ -25,6 +25,9 @@ Robot::Robot(Controller::RobotState<3> &stateEst) : qEst(stateEst) {
   dqOld.dqdot = stateEst.qdot;
   dqOld.dqddot = {0.0, 0.0, 0.0};
 
+  linearizationError = {0.0, 0.0, 0.0};
+  Ke = 5;
+
   trig();
 
   spatialMat();
@@ -154,6 +157,14 @@ void Robot::trig() {
   s12 = std::sin(q[0] + q[2]);
 };
 
+Eigen::Vector3d Robot::forwardKinematics(Eigen::Vector3d q) {
+  double c1_local = std::cos(q[0]);
+  double s1_local = std::sin(q[0]);
+  double c12_local = std::cos(q[0] + q[2]);
+  double s12_local = std::sin(q[0] + q[2]);
+  return {L * c12_local + q[1] * c1_local, L * s12_local + q[1] * s1_local, 0.0};
+}
+
 Controller::DesiredState<3> Robot::invKinematics(Path::DesiredPosition dpos,
                                                  double dt) {
   Controller::DesiredState<3> desState;
@@ -167,18 +178,19 @@ Controller::DesiredState<3> Robot::invKinematics(Path::DesiredPosition dpos,
       J_des.transpose() * (J_des * J_des.transpose()).inverse();
 
   desState.dqdot =
-      pseudoJ * dpos.velocity.head<2>() +
+      pseudoJ * (dpos.velocity.head<2>() + Ke * linearizationError.head<2>()) +
       (Eigen::Matrix3d::Identity() - pseudoJ * J_des) * dqOld.dqdot;
 
   desState.dqddot =
       pseudoJ * (dpos.acceleration.head<2>() - Jdot_des * dqOld.dqdot) +
       (Eigen::Matrix3d::Identity() - pseudoJ * J_des) * dqOld.dqddot;
 
-  Eigen::Vector2d linearizarionError = {
-      0, 0}; // check forward kinematics and correct for error drift over time
-
   desState.dq =
       0.5 * desState.dqddot * dt * dt + desState.dqdot * dt + dqOld.dq;
+
+  Eigen::Vector3d fkPos = forwardKinematics(desState.dq);
+
+  linearizationError = dpos.position - fkPos;
 
   dqOld = desState;
 

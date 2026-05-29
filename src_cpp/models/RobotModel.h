@@ -1,5 +1,6 @@
 #pragma once
 #include "ControllerInterface.h"
+#include "Eigen/src/Core/Matrix.h"
 #include "TrajectoryGenerator.h"
 #include <Eigen/Core>
 #include <sched.h>
@@ -50,12 +51,19 @@ private:
 
   Controller::DesiredState<3> dqOld;
 
+  // CLIK state error correction
+  Eigen::Vector3d linearizationError;
+  double Ke;
+
   // private methods
   void spatialMat();
   void massMat();     // inertial matrix
   void cncMat();      // coriolis and centrifugal
   void jacobianMat(); // jacobian
-  void calcJacobian(const Eigen::Vector3d& q_in, const Eigen::Vector3d& qdot_in, Eigen::Matrix<double, 2, 3>& J_out, Eigen::Matrix<double, 2, 3>& Jdot_out);
+  void calcJacobian(const Eigen::Vector3d &q_in, const Eigen::Vector3d &qdot_in,
+                    Eigen::Matrix<double, 2, 3> &J_out,
+                    Eigen::Matrix<double, 2, 3> &Jdot_out);
+  Eigen::Vector3d forwardKinematics(Eigen::Vector3d q);
 
   void trig();
 };

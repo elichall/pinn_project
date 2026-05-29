@@ -1,3 +1,4 @@
+#pragma once
 
 #include <atomic>
 #include <cstdint>
@@ -42,6 +43,13 @@ struct PathIPC {
   double pathX[MAX_PATH_POINTS];
   double pathY[MAX_PATH_POINTS];
   double pathZ[MAX_PATH_POINTS];
+};
+
+// ipc 3 for UI to control loop
+// /dev/shm/pinn_manip_command
+struct CommandIPC {
+  // contains data/vars that the user wants to modulate during sim
+  // ex. end effector mass, control scheme, pinn support or not
 };
 
 // --- Initialization Methods ---

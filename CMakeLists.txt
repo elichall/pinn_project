@@ -7,6 +7,11 @@ cmake_minimum_required(VERSION 3.10)
 project(RoboticPINNSim VERSION 1.0 LANGUAGES C CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Default to Release mode if not specified to ensure -O3 optimizations
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 # 3. Force the compiler to use the C++17 standard.
 # This is crucial for your sequence lock (`std::atomic`) to work correctly.
 set(CMAKE_CXX_STANDARD 17)
