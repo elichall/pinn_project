@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 import sys
+import os
+import subprocess
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
@@ -12,14 +15,67 @@ def main():
         description="Process and plot PINN Manipulator Telemetry"
     )
     parser.add_argument(
+        "-f",
         "--file",
         type=str,
-        default="../../build/telemetry_log.csv",
-        help="Path to telemetry CSV file.",
+        nargs="?",
+        const="USE_FILEMANAGER",
+        default=None,
+        help="Path to specific telemetry CSV file. Pass without args to use the terminal file chooser.",
     )
     args = parser.parse_args()
 
-    input_path = Path(args.file)
+    # Resolve training_data relative to this script's location
+    training_data_dir = Path(__file__).resolve().parent.parent.parent / "training_data"
+
+    if args.file is None:
+        if not training_data_dir.exists():
+            print(f"Error: Directory {training_data_dir} does not exist.")
+            sys.exit(1)
+
+        csv_files = list(training_data_dir.glob("*_telemetry_log.csv"))
+        if not csv_files:
+            print(f"Error: No telemetry CSV files found in {training_data_dir}.")
+            sys.exit(1)
+
+        # The filename format YYYYMMDD_HHMM sorts chronologically naturally
+        input_path = sorted(csv_files)[-1]
+        print(f"Auto-selected most recent file: {input_path}")
+
+    elif args.file == "USE_FILEMANAGER":
+        if not training_data_dir.exists():
+            print(f"Error: Directory {training_data_dir} does not exist.")
+            sys.exit(1)
+
+        filemanager = os.environ.get("FILEMANAGER", "yazi")
+        with tempfile.NamedTemporaryFile() as tmp:
+            try:
+                subprocess.run(
+                    [filemanager, str(training_data_dir), "--chooser-file", tmp.name],
+                    check=True,
+                )
+            except FileNotFoundError:
+                print(
+                    f"Error: File manager '{filemanager}' not found. Please ensure it is installed and in your PATH."
+                )
+                sys.exit(1)
+            except subprocess.CalledProcessError:
+                # yazi might return non-zero if cancelled
+                pass
+
+            # Read the selected file path
+            tmp.seek(0)
+            chosen_path = tmp.read().decode("utf-8").strip()
+
+        if not chosen_path:
+            print("No file selected. Exiting.")
+            sys.exit(0)
+
+        input_path = Path(chosen_path)
+        print(f"Selected file: {input_path}")
+
+    else:
+        input_path = Path(args.file)
 
     try:
         df = pd.read_csv(input_path)
@@ -32,20 +88,19 @@ def main():
     # 1. Generate Timestamp and Base Output Path
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # input_path.parent gets the directory ('../../build')
-    # input_path.stem gets the filename without extension ('telemetry_log')
-    # Resulting prefix: ../../build/20260528_213700_telemetry_log
+    # input_path.parent gets the directory (e.g. 'training_data')
+    # input_path.stem gets the filename without extension (e.g. '20260530_1006_telemetry_log')
     target_dir = input_path.parent.parent / "logs"
-    out_prefix = target_dir / f"{timestamp}_{input_path.stem}"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    out_prefix = target_dir / f"{input_path.stem}"
 
     # 2. Open a text file for our logging output
     txt_output_path = f"{out_prefix}_report.txt"
     report_file = open(txt_output_path, "w")
 
-    # Helper function to print to both the console and the text file simultaneously
+    # Helper function to print exclusively to the text file to prevent console clutter
     def log_print(message=""):
-        print(message)  # Prints to terminal
-        print(message, file=report_file)  # Prints to our opened txt file
+        print(message, file=report_file)  # Prints ONLY to our opened txt file
 
     log_print(f"--- Analysis Report generated at {timestamp} ---\n")
 
@@ -157,7 +212,8 @@ def main():
     plt.tight_layout()
     plt.savefig(f"{out_prefix}_timing.png", dpi=300)
 
-    log_print(f"\nArtifacts successfully saved with prefix: {out_prefix}")
+    print(f"Artifacts successfully saved with prefix: {out_prefix}")
+    log_print(f"Artifacts successfully saved with prefix: {out_prefix}")
 
     # Close the text file
     report_file.close()

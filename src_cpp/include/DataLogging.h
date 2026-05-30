@@ -4,7 +4,11 @@
 #include <atomic>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <chrono>
+#include <ctime>
+#include <filesystem>
 #include <fstream>
+#include <iomanip>
+#include <sstream>
 #include <thread>
 
 template <int DOF> struct LoggingData {
@@ -21,7 +25,16 @@ void telemetryLoggerThread(std::atomic<bool> &simulationRunning,
                                LoggingData<3>, boost::lockfree::capacity<16384>>
                                &telemetryQueue) {
 
-  std::ofstream csvFile("telemetry_log.csv");
+  // Ensure the directory exists
+  std::filesystem::create_directories("../training_data");
+
+  // Generate timestamp
+  auto t = std::time(nullptr);
+  auto tm = *std::localtime(&t);
+  std::ostringstream oss;
+  oss << "../training_data/" << std::put_time(&tm, "%Y%m%d_%H%M") << "_telemetry_log.csv";
+
+  std::ofstream csvFile(oss.str());
   csvFile << "sysTime,wakeJitter,executionTime,"
           << "q1,q2,q3,qdot1,qdot2,qdot3,"
           << "dq1,dq2,dq3,dqdot1,dqdot2,dqdot3,dqddot1,dqddot2,dqddot3,"

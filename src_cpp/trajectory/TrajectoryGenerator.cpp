@@ -26,7 +26,8 @@ void TrajectoryGenerator::generatePath(const Eigen::Vector3d &start,
   static std::mt19937 gen(rd());
   std::uniform_real_distribution<> noise(-0.1, 0.1); // +/- 10cm noise
 
-  waypoints[numWaypoints++] = {start, Eigen::Vector3d::Zero(), 0.0};
+  waypoints[numWaypoints++] = {start, Eigen::Vector3d::Zero(),
+                               Eigen::Vector3d::Zero(), 0.0};
 
   // 2. Generate random intermediate points
   // To keep the path progressing forward, we linearly interpolate from start
@@ -45,10 +46,12 @@ void TrajectoryGenerator::generatePath(const Eigen::Vector3d &start,
     // velocity
     double timeAtWaypoint = fraction * totalTime;
 
-    waypoints[numWaypoints++] = {basePos, Eigen::Vector3d::Zero(), timeAtWaypoint};
+    waypoints[numWaypoints++] = {basePos, Eigen::Vector3d::Zero(),
+                                 Eigen::Vector3d::Zero(), timeAtWaypoint};
   }
 
-  waypoints[numWaypoints++] = {end, Eigen::Vector3d::Zero(), totalTime};
+  waypoints[numWaypoints++] = {end, Eigen::Vector3d::Zero(),
+                               Eigen::Vector3d::Zero(), totalTime};
 
   // 3. Compute Velocities at Waypoints using Catmull-Rom logic
   // v_i = (p_{i+1} - p_{i-1}) / (t_{i+1} - t_{i-1})
@@ -58,6 +61,15 @@ void TrajectoryGenerator::generatePath(const Eigen::Vector3d &start,
         (waypoints[i + 1].position - waypoints[i - 1].position) / dt;
   }
   // Note: Start and End velocities remain Zero (starting and ending at rest).
+
+  // 4. Compute Accelerations at Waypoints using central difference of velocities
+  // a_i = (v_{i+1} - v_{i-1}) / (t_{i+1} - t_{i-1})
+  for (int i = 1; i < numWaypoints - 1; ++i) {
+    double dt = waypoints[i + 1].time - waypoints[i - 1].time;
+    waypoints[i].acceleration =
+        (waypoints[i + 1].velocity - waypoints[i - 1].velocity) / dt;
+  }
+  // Note: Start and End accelerations remain Zero.
 }
 
 int TrajectoryGenerator::getSegmentIndex(double t) const {
@@ -86,19 +98,27 @@ Eigen::Vector3d TrajectoryGenerator::getPosition(double t) const {
   const Waypoint &p0 = waypoints[idx];
   const Waypoint &p1 = waypoints[idx + 1];
 
-  // Normalize time for this specific segment (s goes from 0.0 to 1.0)
+  // Calculate Quintic Hermite Spline Coefficients
   double dt = p1.time - p0.time;
-  double s = (t - p0.time) / dt;
+  double t_local = t - p0.time;
+  double dt2 = dt * dt;
+  double dt3 = dt2 * dt;
+  double dt4 = dt3 * dt;
+  double dt5 = dt4 * dt;
 
-  // Cubic Hermite Spline Basis Functions
-  double h00 = 2 * s * s * s - 3 * s * s + 1;
-  double h10 = s * s * s - 2 * s * s + s;
-  double h01 = -2 * s * s * s + 3 * s * s;
-  double h11 = s * s * s - s * s;
+  Eigen::Vector3d c0 = p0.position;
+  Eigen::Vector3d c1 = p0.velocity;
+  Eigen::Vector3d c2 = p0.acceleration / 2.0;
+  Eigen::Vector3d c3 = (10.0 * (p1.position - p0.position) - (6.0 * p0.velocity + 4.0 * p1.velocity) * dt + 0.5 * (p1.acceleration - 3.0 * p0.acceleration) * dt2) / dt3;
+  Eigen::Vector3d c4 = (-15.0 * (p1.position - p0.position) + (8.0 * p0.velocity + 7.0 * p1.velocity) * dt + (1.5 * p0.acceleration - p1.acceleration) * dt2) / dt4;
+  Eigen::Vector3d c5 = (6.0 * (p1.position - p0.position) - 3.0 * (p0.velocity + p1.velocity) * dt + 0.5 * (p1.acceleration - p0.acceleration) * dt2) / dt5;
 
-  // Calculate position
-  return h00 * p0.position + h10 * dt * p0.velocity + h01 * p1.position +
-         h11 * dt * p1.velocity;
+  double t2 = t_local * t_local;
+  double t3 = t2 * t_local;
+  double t4 = t3 * t_local;
+  double t5 = t4 * t_local;
+
+  return c0 + c1 * t_local + c2 * t2 + c3 * t3 + c4 * t4 + c5 * t5;
 }
 
 Eigen::Vector3d TrajectoryGenerator::getVelocity(double t) const {
@@ -110,17 +130,24 @@ Eigen::Vector3d TrajectoryGenerator::getVelocity(double t) const {
   const Waypoint &p1 = waypoints[idx + 1];
 
   double dt = p1.time - p0.time;
-  double s = (t - p0.time) / dt;
+  double t_local = t - p0.time;
+  
+  double dt2 = dt * dt;
+  double dt3 = dt2 * dt;
+  double dt4 = dt3 * dt;
+  double dt5 = dt4 * dt;
 
-  // Derivative of Basis Functions (with respect to s, multiplied by 1/dt for
-  // chain rule)
-  double dh00 = (6 * s * s - 6 * s) / dt;
-  double dh10 = (3 * s * s - 4 * s + 1); // dt cancels out
-  double dh01 = (-6 * s * s + 6 * s) / dt;
-  double dh11 = (3 * s * s - 2 * s); // dt cancels out
+  Eigen::Vector3d c1 = p0.velocity;
+  Eigen::Vector3d c2 = p0.acceleration / 2.0;
+  Eigen::Vector3d c3 = (10.0 * (p1.position - p0.position) - (6.0 * p0.velocity + 4.0 * p1.velocity) * dt + 0.5 * (p1.acceleration - 3.0 * p0.acceleration) * dt2) / dt3;
+  Eigen::Vector3d c4 = (-15.0 * (p1.position - p0.position) + (8.0 * p0.velocity + 7.0 * p1.velocity) * dt + (1.5 * p0.acceleration - p1.acceleration) * dt2) / dt4;
+  Eigen::Vector3d c5 = (6.0 * (p1.position - p0.position) - 3.0 * (p0.velocity + p1.velocity) * dt + 0.5 * (p1.acceleration - p0.acceleration) * dt2) / dt5;
 
-  return dh00 * p0.position + dh10 * p0.velocity + dh01 * p1.position +
-         dh11 * p1.velocity;
+  double t2 = t_local * t_local;
+  double t3 = t2 * t_local;
+  double t4 = t3 * t_local;
+
+  return c1 + 2.0 * c2 * t_local + 3.0 * c3 * t2 + 4.0 * c4 * t3 + 5.0 * c5 * t4;
 }
 
 // To get Acceleration, you would take the second derivative of the basis
@@ -134,15 +161,22 @@ Eigen::Vector3d TrajectoryGenerator::getAcceleration(double t) const {
   const Waypoint &p1 = waypoints[idx + 1];
 
   double dt = p1.time - p0.time;
-  double s = (t - p0.time) / dt;
+  double t_local = t - p0.time;
+  
+  double dt2 = dt * dt;
+  double dt3 = dt2 * dt;
+  double dt4 = dt3 * dt;
+  double dt5 = dt4 * dt;
 
-  double ddh00 = (12 * s - 6) / dt / dt;
-  double ddh10 = (6 * s - 4) / dt;
-  double ddh01 = (-12 * s + 6) / dt / dt;
-  double ddh11 = (6 * s - 2) / dt;
+  Eigen::Vector3d c2 = p0.acceleration / 2.0;
+  Eigen::Vector3d c3 = (10.0 * (p1.position - p0.position) - (6.0 * p0.velocity + 4.0 * p1.velocity) * dt + 0.5 * (p1.acceleration - 3.0 * p0.acceleration) * dt2) / dt3;
+  Eigen::Vector3d c4 = (-15.0 * (p1.position - p0.position) + (8.0 * p0.velocity + 7.0 * p1.velocity) * dt + (1.5 * p0.acceleration - p1.acceleration) * dt2) / dt4;
+  Eigen::Vector3d c5 = (6.0 * (p1.position - p0.position) - 3.0 * (p0.velocity + p1.velocity) * dt + 0.5 * (p1.acceleration - p0.acceleration) * dt2) / dt5;
 
-  return ddh00 * p0.position + ddh10 * p0.velocity + ddh01 * p1.position +
-         ddh11 * p1.velocity;
+  double t2 = t_local * t_local;
+  double t3 = t2 * t_local;
+
+  return 2.0 * c2 + 6.0 * c3 * t_local + 12.0 * c4 * t2 + 20.0 * c5 * t3;
 }
 
 DesiredPosition TrajectoryGenerator::getDesiredPosition(double t) const {

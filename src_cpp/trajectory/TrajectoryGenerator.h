@@ -9,8 +9,9 @@ constexpr int MAX_WAYPOINTS = 20;
 
 struct Waypoint {
   Eigen::Vector3d position;
-  Eigen::Vector3d velocity; // Needed for continuous splines
-  double time;              // Master clock time when the robot should be here
+  Eigen::Vector3d velocity;     // Needed for continuous splines
+  Eigen::Vector3d acceleration; // Needed for continuous acceleration (Quintic)
+  double time;                  // Master clock time when the robot should be here
 };
 
 struct DesiredPosition {

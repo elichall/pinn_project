@@ -1,4 +1,3 @@
-#pragma once
 #include "ManipulatorPlant.h"
 #include "config.h"
 #include <Eigen/Core>
