@@ -44,6 +44,8 @@ private:
   // stored state values
   double c1, c2, c12, s1, s2, s12;
 
+  double avgObjectMass;
+
   // state values
   Controller::RobotState<3> &qEst;
   Eigen::Vector3d q; // th1, d, th2

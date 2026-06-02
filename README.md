@@ -21,36 +21,45 @@ The system operates in three completely decoupled silos:
    * Executes neural network forward passes via XLA to compute compensation torques.
 
 ### Lock-Free Inter-Process Communication (IPC)
+
 To prevent the 1000Hz control loop from ever blocking or waiting on the UI/ML threads, the system utilizes a **Dual-IPC** strategy:
+
 * **High-Speed Telemetry:** Lock-free data transfer utilizing an atomic **Sequence Lock (Seqlock)**.
 * **Bulk Trajectory Data:** Event-driven transfer of massive path arrays utilizing a cross-process hardware mutex (`pthread_mutexattr_setpshared`).
 
 ## Current State & Features
+
 * **Computed Torque Control (CTC):** Fully operational traditional controller validating the baseline physics engine.
 * **Continuous Trajectory Generation:** Capable of generating non-stop, randomized cubic Hermite splines (Catmull-Rom) for continuous testing.
 * **High-Fidelity Telemetry Logging:** Pre-allocated, zero-allocation CSV dumping for post-simulation frequency and tracking analysis.
 
 ## Roadmap / Future Work
-- **Physics-Informed Neural Network (PINN):** Finalize the Python IPC bridge to inject ML compensation torques into the real-time C++ plant.
-- **Sensor Noise Injection:** Introduce Gaussian noise and filtering (State Estimation) to transition from a "perfect" simulation to real-world conditions.
-- **Comparative Study Metrics:** Automate the calculation of Tracking Error (RMSE) and Total Control Effort between CTC, SMC, and PINN under mass-mismatch disturbances.
-- **Trajectory Upgrades:** Upgrade to Quintic splines / Minimum Jerk optimization to guarantee $C^2$ continuous acceleration (eliminating feedforward torque spikes).
+
+* **Physics-Informed Neural Network (PINN):** Finalize the Python IPC bridge to inject ML compensation torques into the real-time C++ plant.
+* **Sensor Noise Injection:** Introduce Gaussian noise and filtering (State Estimation) to transition from a "perfect" simulation to real-world conditions.
+* **Comparative Study Metrics:** Automate the calculation of Tracking Error (RMSE) and Total Control Effort between CTC, SMC, and PINN under mass-mismatch disturbances.
+* **Trajectory Upgrades:** Upgrade to Quintic splines / Minimum Jerk optimization to guarantee $C^2$ continuous acceleration (eliminating feedforward torque spikes).
 
 ## Build and Run
 
 ### Dependencies
+
 * **C++:** CMake (>=3.10), GCC (C++17), Eigen3, Boost.Interprocess, GLFW, OpenGL.
 * **Python:** Poetry, JAX, NumPy.
 * **OS:** Linux (Requires POSIX compliance for shared memory and real-time scheduling).
 
 ### Compilation
+
 ```bash
 mkdir build && cd build
 cmake ..
 make
 ```
+
 ### Execution
+
 Due to strict real-time OS scheduling, the control loop must be executed with elevated privileges. The startup order must be strictly followed to ensure shared memory initialization.
+
 ```bash
 # Terminal 1: Start the Real-Time Master (Creates IPC)
 sudo ./RoboticSim
@@ -61,5 +70,3 @@ sudo ./RoboticSim
 # Terminal 3: Start the ML Inference (coming soon)
 poetry run python pinn_inference.py
 ```
-
-

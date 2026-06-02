@@ -21,9 +21,15 @@ public:
   Eigen::Vector3d C;
   Eigen::Vector3d G;
 
+  double currentObjectMass;
+
+  // mode
+  int opMode; // holding (1) or free end (0)
+
   // public methods
   void applyControl(const Eigen::Vector3d tau,
                     double dt); // given a torque input respond
+  void pickPlaceObject(int modeChange, const double objectMass = 0.0);
 
 private:
   // physical constants

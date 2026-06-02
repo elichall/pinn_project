@@ -5,6 +5,7 @@
 #include "config.h"
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <iostream>
 
 namespace Model {
 
@@ -18,6 +19,8 @@ Robot::Robot(Controller::RobotState<3> &stateEst) : qEst(stateEst) {
   L = LINK_2_LENGTH;
 
   mE = END_MASS;
+  opMode = 0;
+  avgObjectMass = AVERAGE_OBJECT_MASS;
 
   update();
 
@@ -49,7 +52,18 @@ void Robot::update() {
   cncMat();
 };
 
-void Robot::setMode(int mode) { opMode = mode; };
+void Robot::setMode(int mode) {
+  opMode = mode;
+  switch (mode) {
+  case 0:
+    mE -= avgObjectMass;
+    break;
+  case 1:
+    mE += avgObjectMass;
+    break;
+  }
+  std::cout << "Model: " << mE << std::endl;
+};
 
 void Robot::spatialMat() {
   // Forward Kinematics Transformation
@@ -162,7 +176,8 @@ Eigen::Vector3d Robot::forwardKinematics(Eigen::Vector3d q) {
   double s1_local = std::sin(q[0]);
   double c12_local = std::cos(q[0] + q[2]);
   double s12_local = std::sin(q[0] + q[2]);
-  return {L * c12_local + q[1] * c1_local, L * s12_local + q[1] * s1_local, 0.0};
+  return {L * c12_local + q[1] * c1_local, L * s12_local + q[1] * s1_local,
+          0.0};
 }
 
 Controller::DesiredState<3> Robot::invKinematics(Path::DesiredPosition dpos,

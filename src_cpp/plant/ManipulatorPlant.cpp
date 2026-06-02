@@ -2,6 +2,7 @@
 #include "config.h"
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <iostream>
 
 namespace Plant {
 
@@ -13,6 +14,7 @@ Robot::Robot() {
   L = LINK_2_LENGTH;
 
   mE = END_MASS;
+  opMode = 0;
 
   q = INITAL_STATE;
   qdot = INITAL_STATE_DOT;
@@ -38,6 +40,21 @@ void Robot::applyControl(const Eigen::Vector3d tau, const double dt) {
   spatialMat();
   massMat();
   cncMat();
+};
+
+void Robot::pickPlaceObject(int modeChange, const double objectMass) {
+  opMode = modeChange;
+  switch (modeChange) {
+  case 0:
+    mE -= currentObjectMass;
+    currentObjectMass = objectMass;
+    break;
+  case 1:
+    mE += objectMass;
+    currentObjectMass = objectMass;
+    break;
+  }
+  std::cout << "Plant: " << mE << std::endl;
 };
 
 void Robot::spatialMat() {

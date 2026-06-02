@@ -10,8 +10,9 @@ const double LINK_2_LENGTH = 0.8;        // m
 const double LINK_2_INERTIAL_MASS = 0.8; // kg-m^2
 
 const double END_MASS = 0.5; // kg
+const double AVERAGE_OBJECT_MASS = 1;
 
-const double CYCLE_TIME = 5.0; // sec
+const double CYCLE_TIME = 0.5; // sec
 const double WAIT_TIME = 0.1;  // s
 
 const Eigen::Vector3d INITAL_STATE = {1.1902899, 0.538516, -1.1902899};

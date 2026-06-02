@@ -36,6 +36,8 @@ int main() {
   Controller::DesiredState<DOF> desiredState;
   Controller::Torque<DOF> torque;
 
+  int mode = 0; // pick up or drop off
+
   LoggingData<DOF> loggingData;
 
   // initalizations
@@ -118,9 +120,32 @@ int main() {
     sensors.readSensors();
     state = sensors.qEst;
 
-    // check if cycle is complete ---
+    // check if cycle is complete
     if (cycleTime >= CYCLE_TIME + WAIT_TIME) {
+      // change mode of operation
+      double objectMass = 10.0; // temp explicity definition
       std::swap(cycleStart, cycleEnd);
+
+      switch (mode) {
+      case 0:
+        mode = 1;
+        // plant picks up or drops an object, changing end effector mass
+        plant.pickPlaceObject(
+            mode, objectMass); // need to pass in the randomly generated mass
+        // model changes its end effector mass to the average of the waste
+        // "class"
+        model.setMode(mode);
+
+        // generate a point in conveyor belt to go to
+        // cycleEnd = generateNewEndPoint
+        break;
+
+      case 1:
+        mode = 0;
+        plant.pickPlaceObject(mode);
+        model.setMode(mode);
+        break;
+      }
 
       path.generatePath(cycleStart, cycleEnd, CYCLE_TIME, 5);
 
