@@ -2,6 +2,7 @@
 #include "ControllerInterface.h"
 #include "DataLogging.h"
 #include "Eigen/src/Core/Matrix.h"
+#include "EndPointGenerator.h"
 #include "ManipulatorPlant.h"
 #include "RobotModel.h"
 #include "RobotSensors.h"
@@ -51,8 +52,10 @@ int main() {
 
   Controller::CTC<DOF> ctc(model);
 
+  EndPoint endPoint = {pickupArea[0], pickupArea[1], pickupArea[2],
+                       pickupArea[3]};
   Eigen::Vector3d cycleStart = INITAL_STATE_EPS;
-  Eigen::Vector3d cycleEnd = FINAL_STATE_EPS;
+  Eigen::Vector3d cycleEnd = endPoint.generateEndPoint();
   Path::TrajectoryGenerator path = {cycleStart, cycleEnd, CYCLE_TIME, 5};
 
   Controller::ControllerInterface<DOF> *activeController = &ctc;
@@ -135,15 +138,14 @@ int main() {
         // model changes its end effector mass to the average of the waste
         // "class"
         model.setMode(mode);
-
-        // generate a point in conveyor belt to go to
-        // cycleEnd = generateNewEndPoint
         break;
 
       case 1:
         mode = 0;
         plant.pickPlaceObject(mode);
         model.setMode(mode);
+
+        cycleEnd = endPoint.generateEndPoint();
         break;
       }
 

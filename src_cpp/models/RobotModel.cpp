@@ -62,7 +62,6 @@ void Robot::setMode(int mode) {
     mE += avgObjectMass;
     break;
   }
-  std::cout << "Model: " << mE << std::endl;
 };
 
 void Robot::spatialMat() {

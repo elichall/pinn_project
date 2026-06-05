@@ -54,7 +54,6 @@ void Robot::pickPlaceObject(int modeChange, const double objectMass) {
     currentObjectMass = objectMass;
     break;
   }
-  std::cout << "Plant: " << mE << std::endl;
 };
 
 void Robot::spatialMat() {
